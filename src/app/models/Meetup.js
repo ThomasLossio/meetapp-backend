@@ -1,4 +1,5 @@
 import Sequelize, { Model } from 'sequelize';
+import { isBefore } from 'date-fns';
 
 class Meetup extends Model {
   static init(sequelize) {
@@ -8,6 +9,12 @@ class Meetup extends Model {
         description: Sequelize.STRING,
         localization: Sequelize.STRING,
         date_and_hour: Sequelize.DATE,
+        cancelable: {
+          type: Sequelize.VIRTUAL,
+          get() {
+            return isBefore(new Date(), this.date_and_hour);
+          },
+        },
       },
       {
         sequelize,
