@@ -9,6 +9,12 @@ class Meetup extends Model {
         description: Sequelize.STRING,
         localization: Sequelize.STRING,
         date_and_hour: Sequelize.DATE,
+        past: {
+          type: Sequelize.VIRTUAL,
+          get() {
+            return isBefore(this.date_and_hour, new Date());
+          },
+        },
         cancelable: {
           type: Sequelize.VIRTUAL,
           get() {
