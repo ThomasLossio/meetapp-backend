@@ -111,30 +111,30 @@ class MeetupController {
       return res.status(404).json({ error: 'Meetup not found' });
     }
 
-    const { date_and_hour, user_id } = meetup;
+    const { date_and_hour: date, user_id: user } = meetup;
 
-    if (user_id !== req.userId) {
+    if (user !== req.userId) {
       return res
         .status(401)
         .json({ error: `You can only edit if you are meetups's owner` });
     }
 
-    if (isBefore(date_and_hour, new Date())) {
+    if (isBefore(date, new Date())) {
       return res
         .status(400)
         .json({ error: 'You cannot edit a meetup that has passed' });
     }
 
-    const startDate = parseISO(req.body.date_and_hour);
+    const startDate = parseISO(date);
 
     if (isBefore(startDate, new Date())) {
       return res.status(400).json({ error: 'Past dates are not permitted' });
     }
 
-    const { banner_id: banner } = req.body;
+    const { banner_id: bannerCheck } = req.body;
 
-    if (banner) {
-      const fileExists = await File.findByPk(banner);
+    if (bannerCheck) {
+      const fileExists = await File.findByPk(bannerCheck);
 
       if (!fileExists) {
         return res
@@ -153,7 +153,33 @@ class MeetupController {
       ],
     });
 
-    return res.json(meetup);
+    const {
+      id,
+      title,
+      description,
+      localization,
+      date_and_hour,
+      banner,
+      user_id,
+      past,
+      cancelable,
+    } = await Meetup.findByPk(req.params.id, {
+      include: [
+        { model: File, as: 'banner', attributes: ['id', 'path', 'url'] },
+      ],
+    });
+
+    return res.json({
+      id,
+      title,
+      description,
+      localization,
+      date_and_hour,
+      banner,
+      user_id,
+      past,
+      cancelable,
+    });
   }
 
   async delete(req, res) {
