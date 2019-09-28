@@ -34,6 +34,7 @@ class UserController {
 
   async update(req, res) {
     const schema = Yup.object().shape({
+      name: Yup.string(),
       email: Yup.string()
         .email()
         .required(),
@@ -64,7 +65,10 @@ class UserController {
       return res.status(401).json({ error: 'Password does not match' });
     }
 
-    const { id, name } = await user.update({ password: req.body.password });
+    const { id, name } = await user.update({
+      name: req.body.name,
+      password: req.body.password,
+    });
 
     return res.json({
       id,
