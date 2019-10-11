@@ -20,6 +20,27 @@ class OrganizingController {
 
     return res.json(meetups);
   }
+
+  async show(req, res) {
+    const meetup = await Meetup.findOne({
+      where: { user_id: req.userId },
+      attributes: [
+        'id',
+        'title',
+        'date_and_hour',
+        'cancelable',
+        'localization',
+      ],
+      include: [
+        {
+          model: User,
+          attributes: ['id', 'name'],
+        },
+      ],
+    });
+
+    return res.json(meetup);
+  }
 }
 
 export default new OrganizingController();

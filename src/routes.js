@@ -28,6 +28,7 @@ routes.put('/meetups/:id', MeetupController.update);
 routes.delete('/meetups/:id', MeetupController.delete);
 
 routes.get('/organizing/', OrganizingController.index);
+routes.get('/organizing/:id', OrganizingController.show);
 
 routes.post('/subscriptions/', SubscriptionController.store);
 routes.get('/subscriptions/', SubscriptionController.index);
