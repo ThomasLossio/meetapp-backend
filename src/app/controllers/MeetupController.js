@@ -31,7 +31,11 @@ class MeetupController {
         'banner_id',
       ],
       include: [
-        User,
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'name'],
+        },
         {
           model: File,
           as: 'banner',
