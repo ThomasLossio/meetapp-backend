@@ -11,6 +11,7 @@ class OrganizingController {
       attributes: ['id', 'title', 'date_and_hour', 'cancelable'],
       limit: 10,
       offset: (page - 1) * 10,
+      order: [['date_and_hour', 'ASC']],
       include: [
         {
           model: User,
