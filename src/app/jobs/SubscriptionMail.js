@@ -8,12 +8,12 @@ class SubscriptionMail {
   async handle({ data }) {
     const { meetup, user } = data;
 
-    Mail.senddMail({
-      to: `${meetup.User.email} <${meetup.User.name}>`,
+    Mail.sendMail({
+      to: `${meetup.user.email} <${meetup.user.name}>`,
       subject: 'Inscrição no seu evento',
       template: 'subscription',
       context: {
-        organizer: meetup.User.name,
+        organizer: meetup.user.name,
         meetup: meetup.title,
         subscriber: user.name,
         subscriberEmail: user.email,
