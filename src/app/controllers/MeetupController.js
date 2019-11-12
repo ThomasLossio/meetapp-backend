@@ -1,4 +1,3 @@
-import * as Yup from 'yup';
 import { Op } from 'sequelize';
 import { parseISO, isBefore, endOfDay, startOfDay } from 'date-fns';
 import Meetup from '../models/Meetup';
@@ -50,19 +49,6 @@ class MeetupController {
   }
 
   async store(req, res) {
-    const schema = Yup.object().shape({
-      title: Yup.string().required(),
-      description: Yup.string().required(),
-      date_and_hour: Yup.date().required(),
-      localization: Yup.string().required(),
-      user_id: Yup.number().required(),
-      banner_id: Yup.number(),
-    });
-
-    if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'Validation fails' });
-    }
-
     const { user_id, date_and_hour, banner_id } = req.body;
 
     const userExists = await User.findByPk(user_id);
@@ -97,18 +83,6 @@ class MeetupController {
   }
 
   async update(req, res) {
-    const schema = Yup.object().shape({
-      title: Yup.string(),
-      description: Yup.string(),
-      localization: Yup.string(),
-      date_and_hour: Yup.date(),
-      banner_id: Yup.number(),
-    });
-
-    if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'Validation fails' });
-    }
-
     const meetup = await Meetup.findByPk(req.params.id);
 
     if (!meetup) {
