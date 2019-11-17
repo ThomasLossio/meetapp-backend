@@ -77,9 +77,7 @@ class MeetupController {
 
     const meetup = await Meetup.create(req.body);
 
-    return res.json({
-      meetup,
-    });
+    return res.json(meetup);
   }
 
   async update(req, res) {

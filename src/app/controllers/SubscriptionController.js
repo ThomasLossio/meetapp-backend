@@ -5,8 +5,8 @@ import Subscription from '../models/Subscription';
 import User from '../models/User';
 import File from '../models/File';
 
-import SubscriptionMail from '../jobs/SubscriptionMail';
-import Queue from '../../lib/Queue';
+import CreateSubscriptionService from '../services/CreateSubscriptionService';
+import DeleteSubscriptionService from '../services/DeleteSubscriptionService';
 
 class SubscriptionController {
   async index(req, res) {
@@ -37,106 +37,21 @@ class SubscriptionController {
   }
 
   async store(req, res) {
-    const user = await User.findByPk(req.userId);
     const { meetup_id } = req.body;
 
-    const meetup = await Meetup.findByPk(meetup_id, {
-      include: [
-        {
-          model: User,
-          as: 'user',
-          attributes: ['id', 'name', 'email'],
-        },
-      ],
-    });
-
-    if (meetup.user_id === req.userId) {
-      return res
-        .status(400)
-        .json({ error: 'You cannot subscribe for your own meetup' });
-    }
-
-    if (meetup.past) {
-      return res.status(400).json({ error: 'This meetup has passed' });
-    }
-
-    const checkSubscribed = await Subscription.findOne({
-      where: { user_id: req.userId, meetup_id },
-    });
-
-    if (checkSubscribed) {
-      return res.status(400).json({
-        error: 'You cannot subscribe on a meetup you already has subscribed',
-      });
-    }
-
-    const checkDate = await Subscription.findOne({
-      where: { user_id: req.userId },
-      include: [
-        {
-          model: Meetup,
-          where: { date_and_hour: meetup.date_and_hour },
-        },
-      ],
-    });
-
-    if (checkDate) {
-      return res.status(400).json({
-        error: 'You are already subscribed in another meetup at the same time',
-      });
-    }
-
-    const subscription = await Subscription.create({
+    const subscription = await CreateSubscriptionService.run({
       user_id: req.userId,
       meetup_id,
-    });
-
-    await Queue.add(SubscriptionMail.key, {
-      meetup,
-      user,
     });
 
     return res.json(subscription);
   }
 
   async delete(req, res) {
-    const subscription = await Subscription.findByPk(req.params.id);
-
-    if (!subscription) {
-      return res.status(400).json({
-        error: 'This subscription does not exist',
-      });
-    }
-
-    if (subscription.user_id !== req.userId) {
-      return res.status(400).json({
-        error: 'This subscripiton is not yours',
-      });
-    }
-
-    const meetup = await Meetup.findByPk(subscription.meetup_id, {
-      include: [
-        {
-          model: User,
-          as: 'user',
-          attributes: ['id', 'name', 'email'],
-        },
-      ],
+    await DeleteSubscriptionService.run({
+      subscription_id: req.params.id,
+      user_id: req.userId,
     });
-
-    if (meetup.user.id === req.userId) {
-      return res
-        .status(400)
-        .json({ error: 'You cannot unsubscribe for your own meetup' });
-    }
-
-    if (meetup.past) {
-      return res.status(400).json({
-        error: 'This meetup has passed, you cannot unsubscribe it anymore',
-      });
-    }
-
-    await subscription.destroy();
 
     return res.status(204).json();
   }
